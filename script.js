@@ -12,12 +12,12 @@ let currentInput = '';
         const historyToggle = document.getElementById('historyToggle');
 
         function appendToDisplay(value) {
-            // Jeśli mamy wynik i użytkownik zaczyna nowe działanie (operator)
+            // Jeśli jest wynik i użytkownik zaczyna nowe działanie od operatora mate,atycznego
             if (currentResult !== null && isNewCalculation && ['+', '-', '×', '÷', '^'].includes(value)) {
                 currentInput = formatNumberWithSpaces(currentResult.toString()).replace(/\./g, ',') + value;
                 isNewCalculation = false;
             } 
-            // Jeśli mamy wynik i użytkownik zaczyna wprowadzać liczbę
+            // Jeśli jwst wynik i użytkownik zaczyna wprowadzać liczbę (w domyśle chce zacząć nowe obliczenia, bo nie dał operatora sugerującego kontynuację)
             else if (currentResult !== null && isNewCalculation && !['+', '-', '×', '÷', '^'].includes(value)) {
                 currentInput = value;
                 currentResult = null;
@@ -45,23 +45,22 @@ let currentInput = '';
             }
             
             displayInput.innerHTML = formatDisplay(currentInput);
-            // Ukrywamy wynik gdy zaczynamy nowe wprowadzanie
+            // Ukrywa wynik podczas nowego wprowadzania
             if (currentResult !== null && !isNewCalculation) {
                 displayResult.textContent = '';
                 currentResult = null;
             }
         }
-
+            // wymouszona kolejność zmiany formatowania znaku dzielenia
         function formatDisplay(input) {
-            // Najpierw formatujemy potęgi, aby uniknąć problemu z zamianą znaku / w indeksach
+            // 1. najpierw formatuj potęgi, aby uniknąć problemu z zamianą znaku "/" w indeksach
             let formatted = input.replace(/\^(\d+)/g, (match, p1) => {
                 return `<sup>${p1}</sup>`;
             });
             
-            // Następnie zamieniamy operatory, ale tylko poza znacznikami HTML
+            // 2. następnie zamia operatory, ale tylko poza znacznikami HTML
             formatted = formatted
                 .replace(/\*/g, '×')
-                //.replace(/([^>])\//g, '$1÷') // Zamiana / na ÷ tylko poza znacznikami HTML
                 .replace(/π/g, 'π')
                 .replace(/Math\.PI/g, 'π')
                 .replace(/Math\.E/g, 'e');
@@ -71,12 +70,12 @@ let currentInput = '';
 
         // Funkcja formatująca liczby z separatorem tysięcy (spacjami)
         function formatNumberWithSpaces(numberStr) {
-            // Sprawdzamy, czy to liczba z częścią dziesiętną
+            // Sprawdzenie, czy liczba zawiera część dziesiętną
             const parts = numberStr.split('.');
             let integerPart = parts[0];
             const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
             
-            // Formatujemy część całkowitą z separatorami
+            // Formatowanie części całkowitej z separatorami
             integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
             
             return integerPart + decimalPart;
@@ -102,7 +101,7 @@ let currentInput = '';
         function deleteLast() {
             // Usuwanie ostatniego znaku, uwzględniając indeksy górne
             if (currentInput.endsWith('^') || /\^\d+$/.test(currentInput)) {
-                // Jeśli ostatnie to potęgowanie, usuń cały fragment potęgi
+                // Jeśli ostatnie jest potęgowanie, usuwa cały fragment potęgi
                 currentInput = currentInput.replace(/\^\d+$/, '');
             } else {
                 currentInput = currentInput.slice(0, -1);
@@ -121,16 +120,14 @@ let currentInput = '';
             displayResult.textContent = '';
         }
 
-        // Funkcja do zaokrąglania wyników i unikania błędów zmiennoprzecinkowych
+        // Funkcja zaokraglająca wyniki i unikająca błędów zmiennoprzecinkowych (0,3 - 0,1 nie zawsze daje 0,2 :)
         function roundResult(num, precision = 6) {
             if (num === null || isNaN(num)) return num;
             
-            // Unikamy błędów zaokrąglania zmiennoprzecinkowego
             const factor = Math.pow(10, precision);
-            // Zaokrąglamy do najbliższej liczby całkowitej i dzielimy przez factor
+
             const rounded = Math.round(num * factor) / factor;
             
-            // Usuwamy niepotrzebne zera po przecinku
             return parseFloat(rounded.toFixed(precision));
         }
 
@@ -148,7 +145,7 @@ let currentInput = '';
                 const result = eval(expressionForEval);
                 const roundedResult = roundResult(result);
                 
-                // Formatowanie wyrażenia do wyświetlania (z ładnymi znakami)
+                // Formatowanie wyrażenia do wyświetlania
                 const displayExpression = currentInput
                     .replace(/\*/g, '×')
                     .replace(/\//g, '÷')
@@ -158,6 +155,7 @@ let currentInput = '';
                 addToHistory(displayExpression, roundedResult);
                 
                 // Formatowanie wyniku z przecinkiem zamiast kropki i separatorami tysięcy
+                // // Funkcja obecnie jest bez sensu, bo zamienia . na . ale zostanie rozbudowana. Aby nie porzebudowywać kodu, pozostawiona w tej osobiwej formie
                 let resultStr = roundedResult.toString();
                 if (resultStr.includes('.')) {
                     resultStr = resultStr.replace('.', '.');
@@ -170,7 +168,6 @@ let currentInput = '';
                 currentInput = '';
                 displayInput.innerHTML = '';
                 
-                // Zapamiętujemy wynik i ustawiamy flagę
                 currentResult = roundedResult;
                 isNewCalculation = true;
                 superscriptMode = false;
