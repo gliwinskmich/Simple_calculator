@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator z Historią</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator">
+            <div class="display">
+                <div class="display-input" id="displayInput"></div>
+                <div class="display-result" id="displayResult"></div>
+            </div>
+            
+            <div class="buttons">
+                <button class="clear" onclick="clearCalculator()">AC</button>
+                <button class="clear" onclick="deleteLast()">&lArr;</button>
+                <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">&olarr;</button>
+                <button class="operator" onclick="appendToDisplay('^')">x<sup>y</sup></button>
+
+                <button class="num-button" onclick="appendToDisplay('7')">7</button>
+                <button class="num-button" onclick="appendToDisplay('8')">8</button>
+                <button class="num-button" onclick="appendToDisplay('9')">9</button>
+                <button class="operator" onclick="appendToDisplay('÷')">÷</button>
+
+                <button class="num-button" onclick="appendToDisplay('4')">4</button>
+                <button class="num-button" onclick="appendToDisplay('5')">5</button>
+                <button class="num-button" onclick="appendToDisplay('6')">6</button>
+                <button class="operator" onclick="appendToDisplay('×')">×</button>
+
+                <button class="num-button" onclick="appendToDisplay('1')">1</button>
+                <button class="num-button" onclick="appendToDisplay('2')">2</button>
+                <button class="num-button" onclick="appendToDisplay('3')">3</button>
+                <button class="operator" onclick="appendToDisplay('-')">-</button>
+                
+                <button onclick="appendToDisplay('(')">(</button>
+                <button class="num-button" onclick="appendToDisplay('0')">0</button>
+                <button onclick="appendToDisplay(')')">)</button>
+                <button class="operator" onclick="appendToDisplay('+')">+</button>
+
+                <button onclick="appendToDisplay('.')">.</button>
+                <button class="operator equals" onclick="calculate()">=</button>
+
+            </div>
+        </div>
+
+        <div class="history-container" id="historyContainer">
+            <div class="history-header">
+                <span>Historia</span>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-history">Brak historii obliczeń</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

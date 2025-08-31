@@ -1,0 +1,198 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .calculator {
+            background-color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 300px;
+            z-index: 2;
+        }
+
+        .display {
+            background-color: #222;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: right;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .display-input {
+            font-size: 18px;
+            color: #ccc;
+            min-height: 27px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .display-result {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            margin-top: 10px;
+            min-height: 38px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        sup {
+            font-size: 0.7em;
+            vertical-align: super;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #555;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        .num-button {
+            background-color: #777;
+        }
+
+        button:hover {
+            background-color: #666;
+        }
+
+        button:active {
+            background-color: #888;
+        }
+
+        .operator {
+            background-color: #ff9500;
+        }
+
+        .operator:hover {
+            background-color: #ffaa33;
+        }
+
+        .equals {
+            background-color: #ff5100;
+            grid-column: span 3;
+        }
+
+        .equals:hover {
+            background-color: #ff3c00;
+        }
+
+        .clear {
+            background-color: #a5a5a5;
+            color: black;
+        }
+
+        .constant {
+            background-color: #4a4a4a;
+        }
+
+        .history-toggle {
+            background-color: #0041a3;
+        }
+
+        .history-container {
+            position: absolute;
+            top: 140px;
+            left: 320px;
+            width: 250px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            height: 390px;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-300px);
+            z-index: 1;
+        }
+
+        .history-container.visible {
+            transform: translateX(0);
+        }
+
+        .history-header {
+            padding: 15px;
+            background-color: #0041a3;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-list {
+            padding: 10px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-expression {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .history-result {
+            font-weight: bold;
+            color: #0041a3;
+        }
+
+        .delete-history {
+            background: none;
+            border: none;
+            color: #ff3b30;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+        }
+
+        .delete-history:hover {
+            color: #ff0000;
+        }
+
+        .empty-history {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }

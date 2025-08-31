@@ -1,0 +1,269 @@
+let currentInput = '';
+        let currentResult = null;
+        let calculationHistory = [];
+        let historyVisible = false;
+        let isNewCalculation = true;
+        let superscriptMode = false;
+
+        const displayInput = document.getElementById('displayInput');
+        const displayResult = document.getElementById('displayResult');
+        const historyContainer = document.getElementById('historyContainer');
+        const historyList = document.getElementById('historyList');
+        const historyToggle = document.getElementById('historyToggle');
+
+        function appendToDisplay(value) {
+            // Jeśli mamy wynik i użytkownik zaczyna nowe działanie (operator)
+            if (currentResult !== null && isNewCalculation && ['+', '-', '×', '÷', '^'].includes(value)) {
+                currentInput = formatNumberWithSpaces(currentResult.toString()).replace(/\./g, ',') + value;
+                isNewCalculation = false;
+            } 
+            // Jeśli mamy wynik i użytkownik zaczyna wprowadzać liczbę
+            else if (currentResult !== null && isNewCalculation && !['+', '-', '×', '÷', '^'].includes(value)) {
+                currentInput = value;
+                currentResult = null;
+                isNewCalculation = false;
+            }
+            else {
+                // Obsługa trybu indeksu górnego dla potęg
+                if (value === '^') {
+                    superscriptMode = true;
+                    currentInput += value;
+                    displayInput.innerHTML = formatDisplay(currentInput);
+                    return;
+                }
+                
+                if (superscriptMode && !isNaN(value) || value === '(' || value === ')') {
+                    currentInput += value;
+                    displayInput.innerHTML = formatDisplay(currentInput);
+                    return;
+                } else {
+                    superscriptMode = false;
+                    currentInput += value;
+                }
+                
+                isNewCalculation = false;
+            }
+            
+            displayInput.innerHTML = formatDisplay(currentInput);
+            // Ukrywamy wynik gdy zaczynamy nowe wprowadzanie
+            if (currentResult !== null && !isNewCalculation) {
+                displayResult.textContent = '';
+                currentResult = null;
+            }
+        }
+
+        function formatDisplay(input) {
+            // Najpierw formatujemy potęgi, aby uniknąć problemu z zamianą znaku / w indeksach
+            let formatted = input.replace(/\^(\d+)/g, (match, p1) => {
+                return `<sup>${p1}</sup>`;
+            });
+            
+            // Następnie zamieniamy operatory, ale tylko poza znacznikami HTML
+            formatted = formatted
+                .replace(/\*/g, '×')
+                //.replace(/([^>])\//g, '$1÷') // Zamiana / na ÷ tylko poza znacznikami HTML
+                .replace(/π/g, 'π')
+                .replace(/Math\.PI/g, 'π')
+                .replace(/Math\.E/g, 'e');
+                
+            return formatted;
+        }
+
+        // Funkcja formatująca liczby z separatorem tysięcy (spacjami)
+        function formatNumberWithSpaces(numberStr) {
+            // Sprawdzamy, czy to liczba z częścią dziesiętną
+            const parts = numberStr.split('.');
+            let integerPart = parts[0];
+            const decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+            
+            // Formatujemy część całkowitą z separatorami
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            
+            return integerPart + decimalPart;
+        }
+
+        function insertConstant(constant) {
+            if (currentResult !== null && isNewCalculation) {
+                currentInput = constant;
+                currentResult = null;
+                isNewCalculation = false;
+            } else {
+                currentInput += constant;
+            }
+            
+            displayInput.innerHTML = formatDisplay(currentInput);
+            
+            if (currentResult !== null && !isNewCalculation) {
+                displayResult.textContent = '';
+                currentResult = null;
+            }
+        }
+
+        function deleteLast() {
+            // Usuwanie ostatniego znaku, uwzględniając indeksy górne
+            if (currentInput.endsWith('^') || /\^\d+$/.test(currentInput)) {
+                // Jeśli ostatnie to potęgowanie, usuń cały fragment potęgi
+                currentInput = currentInput.replace(/\^\d+$/, '');
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            
+            displayInput.innerHTML = formatDisplay(currentInput);
+            superscriptMode = false;
+        }
+
+        function clearCalculator() {
+            currentInput = '';
+            currentResult = null;
+            isNewCalculation = true;
+            superscriptMode = false;
+            displayInput.innerHTML = '';
+            displayResult.textContent = '';
+        }
+
+        // Funkcja do zaokrąglania wyników i unikania błędów zmiennoprzecinkowych
+        function roundResult(num, precision = 6) {
+            if (num === null || isNaN(num)) return num;
+            
+            // Unikamy błędów zaokrąglania zmiennoprzecinkowego
+            const factor = Math.pow(10, precision);
+            // Zaokrąglamy do najbliższej liczby całkowitej i dzielimy przez factor
+            const rounded = Math.round(num * factor) / factor;
+            
+            // Usuwamy niepotrzebne zera po przecinku
+            return parseFloat(rounded.toFixed(precision));
+        }
+
+        function calculate() {
+            try {
+                // Zamiana znaków na odpowiedniki do obliczeń
+                let expressionForEval = currentInput
+                    .replace(/,/g, '.')
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/π/g, 'Math.PI')
+                    .replace(/e/g, 'Math.E')
+                    .replace(/\^/g, '**');
+                
+                const result = eval(expressionForEval);
+                const roundedResult = roundResult(result);
+                
+                // Formatowanie wyrażenia do wyświetlania (z ładnymi znakami)
+                const displayExpression = currentInput
+                    .replace(/\*/g, '×')
+                    .replace(/\//g, '÷')
+                    .replace(/Math\.PI/g, 'π')
+                    .replace(/Math\.E/g, 'e');
+                
+                addToHistory(displayExpression, roundedResult);
+                
+                // Formatowanie wyniku z przecinkiem zamiast kropki i separatorami tysięcy
+                let resultStr = roundedResult.toString();
+                if (resultStr.includes('.')) {
+                    resultStr = resultStr.replace('.', '.');
+                }
+                
+                // Dodanie separatorów tysięcy
+                resultStr = formatNumberWithSpaces(resultStr);
+                
+                displayResult.textContent = resultStr;
+                currentInput = '';
+                displayInput.innerHTML = '';
+                
+                // Zapamiętujemy wynik i ustawiamy flagę
+                currentResult = roundedResult;
+                isNewCalculation = true;
+                superscriptMode = false;
+                
+            } catch (error) {
+                displayResult.textContent = 'Błąd';
+                setTimeout(() => {
+                    displayResult.textContent = '';
+                }, 1000);
+            }
+        }
+
+        function addToHistory(expression, result) {
+            calculationHistory.unshift({
+                expression: expression,
+                result: result
+            });
+            
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            if (calculationHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-history">Brak historii obliczeń</div>';
+                return;
+            }
+
+            historyList.innerHTML = '';
+            calculationHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                // Formatowanie wyrażenia do historii
+                let formattedExpression = formatDisplay(item.expression);
+                
+                // Formatowanie wyniku
+                let resultStr = item.result.toString();
+                if (resultStr.includes('.')) {
+                    resultStr = resultStr.replace('.', '.');
+                }
+                
+                // Dodanie separatorów tysięcy do wyniku w historii
+                resultStr = formatNumberWithSpaces(resultStr);
+                
+                historyItem.innerHTML = `
+                    <div>
+                        <div class="history-expression">${formattedExpression}</div>
+                        <div class="history-result">= ${resultStr}</div>
+                    </div>
+                    <button class="delete-history" onclick="deleteHistoryItem(${index})">×</button>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function deleteHistoryItem(index) {
+            calculationHistory.splice(index, 1);
+            updateHistoryDisplay();
+        }
+
+        function toggleHistory() {
+            historyVisible = !historyVisible;
+            
+            if (historyVisible) {
+                historyContainer.classList.add('visible');
+
+                updateHistoryDisplay();
+            } else {
+                historyContainer.classList.remove('visible');
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '0' && event.key <= '9') {
+                appendToDisplay(event.key);
+            } else if (event.key === '+') {
+                appendToDisplay('+');
+            } else if (event.key === '-') {
+                appendToDisplay('-');
+            } else if (event.key === '*') {
+                appendToDisplay('×');
+            } else if (event.key === '/') {
+                event.preventDefault();
+                appendToDisplay('÷');
+            } else if (event.key === '^') {
+                appendToDisplay('^');
+            } else if (event.key === '(' || event.key === ')') {
+                appendToDisplay(event.key);
+            } else if (event.key === 'Enter' || event.key === '=') {
+                calculate();
+            } else if (event.key === 'Escape') {
+                clearCalculator();
+            } else if (event.key === 'Backspace') {
+                deleteLast();
+            }
+        });
